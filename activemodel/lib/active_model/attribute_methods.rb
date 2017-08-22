@@ -249,7 +249,10 @@ module ActiveModel
       #     end
       #   end
       def define_attribute_methods(*attr_names)
-        attr_names.flatten.each { |attr_name| define_attribute_method(attr_name) }
+        attr_names.flatten.each do |attr_name|
+          attribute_log_file.puts "Defining attribute #{attr_name}"
+          define_attribute_method(attr_name)
+        end
       end
 
       # Declares an attribute that should be prefixed and suffixed by
