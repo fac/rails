@@ -62,7 +62,7 @@ module ActiveRecord
 
     module ClassMethods
       def attribute_log_file
-        @attribute_log_file ||= File.new("/tmp/attributes_#{Process.pid}", "w+")
+        @attribute_log_file ||= File.new("/tmp/attributes_#{Process.pid}", "w+").tap { |f| f.sync = true }
       end
       def inherited(child_class) #:nodoc:
         child_class.initialize_generated_modules
