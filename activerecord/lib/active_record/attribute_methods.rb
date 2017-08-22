@@ -61,6 +61,9 @@ module ActiveRecord
     class GeneratedAttributeMethods < Module; end # :nodoc:
 
     module ClassMethods
+      def attribute_log_file
+        @attribute_log_file ||= File.new("/tmp/attributes_#{Process.pid}", "w+")
+      end
       def inherited(child_class) #:nodoc:
         child_class.initialize_generated_modules
         super
@@ -68,7 +71,7 @@ module ActiveRecord
 
       def initialize_generated_modules # :nodoc:
         @generated_attribute_methods = GeneratedAttributeMethods.new { extend Mutex_m }
-        puts "Intializing generated attributes for #{name}"
+        attribute_log_file.puts "Intializing generated attributes for #{name}"
         @attribute_methods_generated = false
         include @generated_attribute_methods
 
@@ -82,7 +85,7 @@ module ActiveRecord
         # Use a mutex; we don't want two threads simultaneously trying to define
         # attribute methods.
         generated_attribute_methods.synchronize do
-          puts "Defining attributes for #{name}"
+          attribute_log_file.puts "Defining attributes for #{name}"
           return false if @attribute_methods_generated
           superclass.define_attribute_methods unless self == base_class
           super(column_names)
@@ -93,7 +96,7 @@ module ActiveRecord
 
       def undefine_attribute_methods # :nodoc:
         generated_attribute_methods.synchronize do
-          puts "Undefining generated attributes for #{name}"
+          attribute_log_file.puts "Undefining generated attributes for #{name}"
           super if defined?(@attribute_methods_generated) && @attribute_methods_generated
           @attribute_methods_generated = false
         end

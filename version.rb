@@ -8,7 +8,7 @@ module Rails
     MAJOR = 4
     MINOR = 2
     TINY  = 9
-    PRE   = nil
+    PRE   = 1
 
     STRING = [MAJOR, MINOR, TINY, PRE].compact.join(".")
   end
