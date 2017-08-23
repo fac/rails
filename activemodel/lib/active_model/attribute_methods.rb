@@ -250,7 +250,7 @@ module ActiveModel
       #   end
       def define_attribute_methods(*attr_names)
         attr_names.flatten.each do |attr_name|
-          attribute_log_file.puts "Defining attribute #{attr_name}"
+          attribute_log_file.puts "#{Time.now.iso8601(6)} Defining attribute #{attr_name}"
           define_attribute_method(attr_name)
         end
       end
@@ -287,16 +287,16 @@ module ActiveModel
       def define_attribute_method(attr_name)
         attribute_method_matchers.each do |matcher|
           method_name = matcher.method_name(attr_name)
-          attribute_log_file.puts "Defining method #{method_name}"
+          attribute_log_file.puts "#{Time.now.iso8601(6)} Defining method #{method_name}"
 
           unless instance_method_already_implemented?(method_name)
             generate_method = "define_method_#{matcher.method_missing_target}"
 
             if respond_to?(generate_method, true)
-              attribute_log_file.puts "Sending method"
+              attribute_log_file.puts "#{Time.now.iso8601(6)} Sending method"
               send(generate_method, attr_name)
             else
-              attribute_log_file.puts "Defining Proxy call"
+              attribute_log_file.puts "#{Time.now.iso8601(6)} Defining Proxy call"
               define_proxy_call true, generated_attribute_methods, method_name, matcher.method_missing_target, attr_name.to_s
             end
           end
@@ -372,30 +372,30 @@ module ActiveModel
         # using the given `extra` args. This fallbacks `define_method`
         # and `send` if the given names cannot be compiled.
         def define_proxy_call(include_private, mod, name, send, *extra) #:nodoc:
-          attribute_log_file.puts "Checking name compliability"
+          attribute_log_file.puts "#{Time.now.iso8601(6)} Checking name compliability"
           defn = if name =~ NAME_COMPILABLE_REGEXP
             "def #{name}(*args)"
           else
             "define_method(:'#{name}') do |*args|"
           end
 
-          attribute_log_file.puts "Adding extras"
+          attribute_log_file.puts "#{Time.now.iso8601(6)} Adding extras"
           extra = (extra.map!(&:inspect) << "*args").join(", ")
 
-          attribute_log_file.puts "Checking call compliability"
+          attribute_log_file.puts "#{Time.now.iso8601(6)} Checking call compliability"
           target = if send =~ CALL_COMPILABLE_REGEXP
             "#{"self." unless include_private}#{send}(#{extra})"
           else
             "send(:'#{send}', #{extra})"
           end
 
-          attribute_log_file.puts "Evaluating"
+          attribute_log_file.puts "#{Time.now.iso8601(6)} Evaluating"
           mod.module_eval <<-RUBY, __FILE__, __LINE__ + 1
             #{defn}
               #{target}
             end
           RUBY
-          attribute_log_file.puts "Done"
+          attribute_log_file.puts "#{Time.now.iso8601(6)} Done"
         end
 
         class AttributeMethodMatcher #:nodoc:
